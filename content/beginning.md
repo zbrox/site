@@ -1,6 +1,6 @@
 +++
 title = "Opening words"
-date = 2019-03-29
+date = 2019-03-29T11:37:00+01:00
 [taxonomies]
 categories = ["general"]
 +++

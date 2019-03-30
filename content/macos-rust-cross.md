@@ -1,6 +1,6 @@
 +++
 title = "Getting rust-embedded/cross running on macOS"
-date = 2019-03-30
+date = 2019-03-30T12:25:00+01:00
 [taxonomies]
 categories = ["programming"]
 tags = ["rust"]
