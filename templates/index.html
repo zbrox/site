@@ -13,6 +13,7 @@
       <link rel="stylesheet" href="{{ get_url(path="print.css", trailing_slash=false) }}" media="print">
       <link rel="stylesheet" href="{{ get_url(path="poole.css", trailing_slash=false) }}">
       <link rel="stylesheet" href="{{ get_url(path="hyde.css", trailing_slash=false) }}">
+      <link rel="stylesheet" href="{{ get_url(path="custom.css", trailing_slash=false) }}">
       <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
 
       {% if config.generate_rss %}
@@ -59,6 +60,20 @@
                         </h1>
 
                         <span class="post-date">{{ page.date | date(format="%Y-%m-%d") }}</span>
+
+                        <span class="summary">
+                          {% if page.summary %}
+                          {{ page.summary | safe }}
+                          {% elif page.description %}
+                          {{ page.description | safe }}
+                          {% elif page.content %}
+                          {{ page.content | safe }}
+                          {% endif %}
+                        </span>
+
+                        {% if page.summary or page.description %}
+                        <a href="{{ page.permalink }}">Continue reading…</a>
+                        {% endif %}
                       </div>
                     {% endfor %}
                 </div>
