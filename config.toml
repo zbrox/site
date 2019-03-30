@@ -11,5 +11,20 @@ highlight_code = true
 # Whether to build a search index to be used later on by a JavaScript library
 build_search_index = true
 
+theme = "hyde"
+
+title = "This & That"
+description = "A bit of everything, mostly about computer stuff and with all the usual caveats"
+
+taxonomies = [
+    {name = "tags", rss = true},
+    {name = "categories"},
+]
+
 [extra]
 # Put all your custom variables here
+hyde_theme = "theme-base-08"
+
+hyde_links = [
+    {url = "https://github.com/zbrox", name = "Github"},
+]
