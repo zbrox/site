@@ -9,7 +9,7 @@ tags = ["rust"]
 One of the great promises and benefits of Rust is that you can easily write code that cross-compiles to various different targets. Not only that but the ecosystem is constantly evolving and trying to make this process
 as painless as possible. [Rustup](http://rustup.rs) makes [managing different target toolchains](https://blog.rust-lang.org/2016/05/13/rustup.html) a breeze. However, if you don't want to pollute your environment with all the different dependencies of those target toolchains you can try [cross](https://github.com/rust-embedded/cross). 
 
-<!--more-->
+<!-- more -->
 
 Simply put `cross` uses Docker containers to build your project. It mimics cargo's CLI arguments as much as possible but instead of using the `rustup` toolchains for a given target it spins up a Docker container. It then builds your project in it and spins down the container. To put it even simpler - it's great!
 
