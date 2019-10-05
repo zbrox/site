@@ -1,6 +1,8 @@
 +++
 title = "Displaying the computed and in use tsconfig"
 date = 2019-04-03T09:29:00+01:00
+slug = "tsconfig-show"
+
 [taxonomies]
 categories = ["programming"]
 tags = ["typescript", "short"]
