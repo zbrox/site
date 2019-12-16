@@ -21,6 +21,12 @@ taxonomies = [
     {name = "categories"},
 ]
 
+[link_checker]
+# Skip link checking for external URLs that start with these prefixes
+skip_prefixes = [
+    "https://github.com/",
+]
+
 [extra]
 # Put all your custom variables here
 hyde_theme = "theme-base-08"
