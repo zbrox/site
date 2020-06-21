@@ -5,6 +5,7 @@ slug = "starting-out-with-nixos"
 draft = true
 
 [taxonomies]
-categories = ["devops"]
-tags = ["nixos"]
+tags = ["nixos", "devops"]
 +++
+
+Some initial thoughts on starting out with Nix

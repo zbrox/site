@@ -4,8 +4,7 @@ date = 2019-03-30T12:25:00+01:00
 slug = "macos-rust-cross"
 
 [taxonomies]
-categories = ["programming"]
-tags = ["rust"]
+tags = ["programming", "rust"]
 +++
 
 One of the great promises and benefits of Rust is that you can easily write code that cross-compiles to various different targets. Not only that but the ecosystem is constantly evolving and trying to make this process

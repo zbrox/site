@@ -1,3 +1,6 @@
 [submodule "themes/hyde"]
 	path = themes/hyde
 	url = https://github.com/getzola/hyde.git
+[submodule "themes/hermit"]
+	path = themes/hermit
+	url = https://github.com/VersBinarii/hermit_zola
