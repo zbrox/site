@@ -18,7 +18,7 @@ sudo chmod 644 /etc/synthetic.conf
 
 In that file add a line with just the text `nix` in there which tells the system to have a firmlink at `/nix` on boot. We will later define what's gonna be mounted there. But first, time to restart the computer. Yay!
 
-And here's how to do that. If we assume you have not partitioned your Mac's disk or did something other than just installed macOS, so `disk` is your main drive. First, we add an APFS volume with the `/nix` mount point with a volume name of `Nix`. The volume name you can change to whatever you want.
+And here's how to do that. If we assume you have not partitioned your Mac's disk or did something other than just installed macOS, so `disk1` is your main drive. First, we add an APFS volume with the `/nix` mount point with a volume name of `Nix`. The volume name you can change to whatever you want.
 
 ```sh
 sudo diskutil apfs addVolume disk1 APFSX Nix -mountpoint /nix
