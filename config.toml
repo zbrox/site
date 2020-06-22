@@ -27,7 +27,7 @@ skip_prefixes = [
 ]
 
 [extra]
-home_subtitle = "Rostislav's little home on the prarie hosting some words mostly about computer stuff"
+home_subtitle = "Rostislav's little home on the prairie hosting some words mostly about computer stuff"
 
 hermit_menu = [
     { link = "/posts", name = "Posts" },
