@@ -4,3 +4,6 @@
 [submodule "themes/hermit"]
 	path = themes/hermit
 	url = https://github.com/VersBinarii/hermit_zola
+[submodule "themes/hermit-zbrox"]
+	path = themes/hermit-zbrox
+	url = https://github.com/zbrox/hermit_zola
