@@ -1,10 +1,6 @@
 +++
 title = "About me"
-date = 2020-06-22T16:12:00+01:00
 slug = "about"
-
-[taxonomies]
-tags = ["about"]
 +++
 
 Hi,
