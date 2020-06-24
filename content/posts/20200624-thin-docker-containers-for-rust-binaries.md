@@ -25,7 +25,7 @@ Make sure you also have the development packages of openssl installed.
 For example, `libssl-dev` on Ubuntu or `openssl-devel` on Fedora.
 ```
 
-Of course, I thought, I'm doing some networking, nowadays encrypted connections are a must. So let's just install `libssl-dev`, as the error suggests. Close, but no cigar. `Musl` and `openssl-sys-extra` didn't play well since the SSL package in Ubuntu is linked against `glibc`. Makes sense. What's next? I didn't really feel like compiling OpenSSL myself.
+Of course, I thought, I'm doing some networking, nowadays encrypted connections are a must. So let's just install `libssl-dev`, as the error suggests. Close, but no cigar. Musl and openssl-sys-extra didn't play well since the SSL package in Ubuntu is linked against `glibc`. Makes sense. What's next? I didn't really feel like compiling OpenSSL myself.
 
 With a lit bit of searching, I found the great [clux/muslrust](https://github.com/clux/muslrust) Docker image. It's based on `Ubuntu Xenial` and conveniently has built a [lot of things with musl-gcc](https://github.com/clux/muslrust#c-libraries), like OpenSSL. A big thanks for this effort to [clux, the creator](https://github.com/clux)!
 
@@ -64,4 +64,4 @@ USER 1000
 CMD ["./<YOUR_CRATE>"]
 ```
 
-This basic `Dockerfile` template is available as a [GitHub Gist](https://gist.github.com/zbrox/716d75c9c8d27016f2f528335617ceb4). I use it in a couple of places, one of which is a public crate called [rmq_monitor](https://crates.io/crates/rmq_monitor). The image size turns out to be a tad more than your binary, in the case of `rmq_monitor` it's only __7Mb__.
+This basic `Dockerfile` template is available as a [GitHub Gist](https://gist.github.com/zbrox/716d75c9c8d27016f2f528335617ceb4). I use it in a couple of places, one of which is a public crate called [rmq_monitor](https://crates.io/crates/rmq_monitor). The image size turns out to be a tad more than your binary, in the case of [the rmq_monitor image](https://hub.docker.com/layers/zbrox/rmq_monitor/0.2.5/images/sha256-32ef6ed0329066d3ad83949c0581782eec5aeed0ebdbcd80707ce20a7208fceb?context=explore) it's only __7Mb__ uncompressed.
