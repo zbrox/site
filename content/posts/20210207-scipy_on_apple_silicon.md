@@ -4,7 +4,7 @@ date = 2021-02-07T03:18:18+01:00
 slug = "scipy_on_apple_silicon"
 
 [taxonomies]
-categories = ["macos", "python"]
+tags = ["macos", "python"]
 +++
 
 Have you managed to get your hands on one of Apple's new machines with their very own Apple SoC? And then you needed to install `scipy` in some freshly cloned Python project?
