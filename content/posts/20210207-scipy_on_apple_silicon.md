@@ -2,7 +2,6 @@
 title = "Build SciPy on Apple Silicon"
 date = 2021-02-07T03:18:18+01:00
 slug = "scipy_on_apple_silicon"
-draft = true
 
 [taxonomies]
 categories = ["macos", "python"]
