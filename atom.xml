@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>This &amp; That</title>
+    <subtitle>A bit of everything, mostly about computer stuff and with all the usual caveats</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://zbrox.com/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://zbrox.com"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2021-02-07T03:18:18+01:00</updated>
+    <id>https://zbrox.com/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Build SciPy on Apple Silicon</title>
+        <published>2021-02-07T03:18:18+01:00</published>
+        <updated>2021-02-07T03:18:18+01:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://zbrox.com/posts/scipy-on-apple-silicon/"/>
+        <id>https://zbrox.com/posts/scipy-on-apple-silicon/</id>
+        
+        <content type="html" xml:base="https://zbrox.com/posts/scipy-on-apple-silicon/">&lt;p&gt;Have you managed to get your hands on one of Apple&#x27;s new machines with their very own Apple SoC? And then you needed to install &lt;code&gt;scipy&lt;&#x2F;code&gt; in some freshly cloned Python project?&lt;&#x2F;p&gt;
+&lt;p&gt;Yeah, I went through that and &lt;code&gt;scipy&lt;&#x2F;code&gt; just not budging, failing dramatically during its build process. Here&#x27;s what I did while waiting for an official native whl package.&lt;&#x2F;p&gt;
+&lt;p&gt;Make sure you&#x27;re using Python 3.9.1 and then just try this out.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install openblas
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;pip&lt;&#x2F;span&gt;&lt;span&gt; install&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; --upgrade&lt;&#x2F;span&gt;&lt;span&gt; pip setuptools wheel
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;pip&lt;&#x2F;span&gt;&lt;span&gt; install cython
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;OPENBLAS&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#dbbb3d;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; --prefix&lt;&#x2F;span&gt;&lt;span&gt; openblas) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;pip&lt;&#x2F;span&gt;&lt;span&gt; install scipy&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; --no-binary&lt;&#x2F;span&gt;&lt;span&gt; :all:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; --no-use-pep517
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Waiting time may vary. Good luck!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Creating thin Docker containers for Rust binaries</title>
+        <published>2020-06-24T18:21:13+02:00</published>
+        <updated>2020-06-24T18:21:13+02:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://zbrox.com/posts/thin-docker-containers-for-rust-binaries/"/>
+        <id>https://zbrox.com/posts/thin-docker-containers-for-rust-binaries/</id>
+        
+        <content type="html" xml:base="https://zbrox.com/posts/thin-docker-containers-for-rust-binaries/">&lt;p&gt;Sometimes you need to distribute some tools as Docker containers, for example when you are running some long-running processes in a Kubernetes cluster. Or whatever else, I don&#x27;t judge. Since nowadays I write all CLI tooling in Rust because it&#x27;s just pure joy, I decided I need to make myself a small &lt;code&gt;Dockerfile&lt;&#x2F;code&gt; template for building thin images that won&#x27;t take much disk space and are fast to download and run with only the bare minimum.&lt;&#x2F;p&gt;
+&lt;p&gt;To ensure we&#x27;re gonna end up with a really small Docker image, we need to make it a &lt;a href=&quot;https:&#x2F;&#x2F;docs.docker.com&#x2F;develop&#x2F;develop-images&#x2F;multistage-build&#x2F;&quot;&gt;multi-stage build&lt;&#x2F;a&gt; one. My original plan seemed easy enough. Compile a static binary using the Rust Linux musl toolchain in the first stage. Then move only the binary to a &lt;a href=&quot;https:&#x2F;&#x2F;hub.docker.com&#x2F;_&#x2F;scratch&#x2F;&quot;&gt;scratch image&lt;&#x2F;a&gt; in the second stage. The scratch image is the most minimal Docker image you can use, with no extra layers, and nothing else in it really.&lt;&#x2F;p&gt;
+&lt;p&gt;There are official &lt;a href=&quot;https:&#x2F;&#x2F;hub.docker.com&#x2F;_&#x2F;rust&quot;&gt;Rust Docker images&lt;&#x2F;a&gt;, so that&#x27;s what I chose as a build stage base. They include &lt;code&gt;rustup&lt;&#x2F;code&gt;, so I just installed the &lt;code&gt;musl&lt;&#x2F;code&gt; toolchain and &lt;code&gt;musl-tools&lt;&#x2F;code&gt;, and I thought I was ready to go. However, when I tried to build the image, the build step in the first phase panicked with the following error:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#31333d;color:#ffffffc4;&quot;&gt;&lt;code&gt;&lt;span&gt;thread &amp;#39;main&amp;#39; panicked at &amp;#39;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;Could not find directory of OpenSSL installation, and this `-sys` crate cannot
+&lt;&#x2F;span&gt;&lt;span&gt;proceed without this knowledge. If OpenSSL is installed and this crate had
+&lt;&#x2F;span&gt;&lt;span&gt;trouble finding it,  you can set the `OPENSSL_DIR` environment variable for the
+&lt;&#x2F;span&gt;&lt;span&gt;compilation process.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;Make sure you also have the development packages of openssl installed.
+&lt;&#x2F;span&gt;&lt;span&gt;For example, `libssl-dev` on Ubuntu or `openssl-devel` on Fedora.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Of course, I thought, I&#x27;m doing some networking, nowadays encrypted connections are a must. So let&#x27;s just install &lt;code&gt;libssl-dev&lt;&#x2F;code&gt;, as the error suggests. Close, but no cigar. Musl and openssl-sys-extra didn&#x27;t play well since the SSL package in Ubuntu is linked against &lt;code&gt;glibc&lt;&#x2F;code&gt;. Makes sense. What&#x27;s next? I didn&#x27;t really feel like compiling OpenSSL myself.&lt;&#x2F;p&gt;
+&lt;p&gt;With a lit bit of searching, I found the great &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;clux&#x2F;muslrust&quot;&gt;clux&#x2F;muslrust&lt;&#x2F;a&gt; Docker image. It&#x27;s based on &lt;code&gt;Ubuntu Xenial&lt;&#x2F;code&gt; and conveniently has built a &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;clux&#x2F;muslrust#c-libraries&quot;&gt;lot of things with musl-gcc&lt;&#x2F;a&gt;, like OpenSSL. A big thanks for this effort to &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;clux&quot;&gt;clux, the creator&lt;&#x2F;a&gt;!&lt;&#x2F;p&gt;
+&lt;p&gt;After replacing the &lt;code&gt;rust&lt;&#x2F;code&gt; image with &lt;code&gt;clux&#x2F;muslrust&lt;&#x2F;code&gt; the crate compilation went fine and I thought that&#x27;s that. But since I kinda rushed it, I totally forgot the small tiny detail of CA certificates. The Docker image was fine, however, the binary was basically not able to do any HTTPS requests since they would error out with certificate errors. Remember, the scratch image is containing basically just the binary.&lt;&#x2F;p&gt;
+&lt;p&gt;So after a couple of extra steps to install the CA certificates Ubuntu package and then copy over the certificates from the first to the second stage, I was done. And here&#x27;s the final result.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Dockerfile&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-Dockerfile &quot;&gt;&lt;code class=&quot;language-Dockerfile&quot; data-lang=&quot;Dockerfile&quot;&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;FROM&lt;&#x2F;span&gt;&lt;span&gt; clux&#x2F;muslrust &lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;AS &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;build
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;WORKDIR &lt;&#x2F;span&gt;&lt;span&gt;&#x2F;usr&#x2F;src
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Update CA Certificates
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;RUN &lt;&#x2F;span&gt;&lt;span&gt;apt update -y &amp;amp;&amp;amp; apt install -y ca-certificates
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;RUN &lt;&#x2F;span&gt;&lt;span&gt;update-ca-certificates
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Build dependencies and rely on cache if Cargo.toml
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# or Cargo.lock haven&amp;#39;t changed
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;RUN &lt;&#x2F;span&gt;&lt;span&gt;USER=root cargo new &amp;lt;YOUR_CRATE&amp;gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;WORKDIR &lt;&#x2F;span&gt;&lt;span&gt;&#x2F;usr&#x2F;src&#x2F;&amp;lt;YOUR_CRATE&amp;gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;COPY&lt;&#x2F;span&gt;&lt;span&gt; Cargo.toml Cargo.lock .&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;RUN &lt;&#x2F;span&gt;&lt;span&gt;cargo build --target x86_64-unknown-linux-musl --release
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Copy the source and build the application.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;COPY&lt;&#x2F;span&gt;&lt;span&gt; src .&#x2F;src
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;RUN &lt;&#x2F;span&gt;&lt;span&gt;cargo install --target x86_64-unknown-linux-musl --path .
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Second stage
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;FROM&lt;&#x2F;span&gt;&lt;span&gt; scratch
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Copy the CA certificates
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;COPY&lt;&#x2F;span&gt;&lt;span&gt; --from=&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;build&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;etc&#x2F;ssl&#x2F;certs&#x2F;ca-certificates.crt &#x2F;etc&#x2F;ssl&#x2F;certs&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Copy the statically-linked binary to the second stage
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;COPY&lt;&#x2F;span&gt;&lt;span&gt; --from=&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;build&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;root&#x2F;.cargo&#x2F;bin&#x2F;&amp;lt;YOUR_CRATE&amp;gt; .
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;USER &lt;&#x2F;span&gt;&lt;span&gt;1000
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;CMD &lt;&#x2F;span&gt;&lt;span&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#dbbb3d;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;.&#x2F;&amp;lt;YOUR_CRATE&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#dbbb3d;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This basic &lt;code&gt;Dockerfile&lt;&#x2F;code&gt; template is available as a &lt;a href=&quot;https:&#x2F;&#x2F;gist.github.com&#x2F;zbrox&#x2F;716d75c9c8d27016f2f528335617ceb4&quot;&gt;GitHub Gist&lt;&#x2F;a&gt;. I use it in a couple of places, one of which is a public crate called &lt;a href=&quot;https:&#x2F;&#x2F;crates.io&#x2F;crates&#x2F;rmq_monitor&quot;&gt;rmq_monitor&lt;&#x2F;a&gt;. The image size turns out to be a tad more than your binary, in the case of &lt;a href=&quot;https:&#x2F;&#x2F;hub.docker.com&#x2F;layers&#x2F;zbrox&#x2F;rmq_monitor&#x2F;0.2.5&#x2F;images&#x2F;sha256-32ef6ed0329066d3ad83949c0581782eec5aeed0ebdbcd80707ce20a7208fceb?context=explore&quot;&gt;the rmq_monitor image&lt;&#x2F;a&gt; it&#x27;s only &lt;strong&gt;7Mb&lt;&#x2F;strong&gt; uncompressed.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Nix package manager on macOS 10.15 a.k.a Catalina</title>
+        <published>2020-05-15T20:03:13+02:00</published>
+        <updated>2020-05-15T20:03:13+02:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://zbrox.com/posts/nix-on-macos-catalina/"/>
+        <id>https://zbrox.com/posts/nix-on-macos-catalina/</id>
+        
+        <content type="html" xml:base="https://zbrox.com/posts/nix-on-macos-catalina/">&lt;p&gt;Trying to install Nix on macOS Catalina is a tiny bit more difficult than I imagined. I had completely forgotten that Catalina doesn&#x27;t allow you to touch the root filesystem and the Nix store is at the usual place - &lt;code&gt;&#x2F;nix&lt;&#x2F;code&gt;. When trying to install Nix, you&#x27;ll get an error that &lt;code&gt;&#x2F;nix&lt;&#x2F;code&gt; is not writeable. The way around that is to create a so-called synthetic firmlink (a feature of APFS) which would allow us to mount volumes on the root filesystem. Those volumes are created only on boot so after we define one, we, unfortunately, have to restart the computer.&lt;&#x2F;p&gt;
+&lt;p&gt;How do we create those synthetic firmlinks? If you don&#x27;t already have the &lt;code&gt;&#x2F;etc&#x2F;synthetic.conf&lt;&#x2F;code&gt; file, create it with the appropriate permissions.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; touch &#x2F;etc&#x2F;synthetic.conf
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; chmod 644 &#x2F;etc&#x2F;synthetic.conf
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In that file add a line with just the text &lt;code&gt;nix&lt;&#x2F;code&gt; in there which tells the system to have a firmlink at &lt;code&gt;&#x2F;nix&lt;&#x2F;code&gt; on boot. We will later define what&#x27;s gonna be mounted there. But first, time to restart the computer. Yay!&lt;&#x2F;p&gt;
+&lt;p&gt;And here&#x27;s how to do that. If we assume you have not partitioned your Mac&#x27;s disk or did something other than just installed macOS, so &lt;code&gt;disk1&lt;&#x2F;code&gt; is your main drive. First, we add an APFS volume with the &lt;code&gt;&#x2F;nix&lt;&#x2F;code&gt; mount point with a volume name of &lt;code&gt;Nix&lt;&#x2F;code&gt;. The volume name you can change to whatever you want.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; diskutil apfs addVolume disk1 APFSX Nix&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; -mountpoint&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;nix
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then we need to do a couple of more things like enable ownership on the volume (from the man pages of &lt;code&gt;diskutil&lt;&#x2F;code&gt;: &lt;strong&gt;When ownership is enabled, the Owner and Group ID settings that exist on the disk are taken into account for determining access, and exact settings are written to the disk as FSOs are created.&lt;&#x2F;strong&gt;), hide the volume from appearing on the Desktop, and add an &lt;code&gt;fstab&lt;&#x2F;code&gt; entry so it automounts on restart.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; diskutil enableOwnership &#x2F;nix &lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# enables ownership
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; chflags hidden &#x2F;nix  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# hides the volume from the Desktop, still shows up on the Finder sidebar
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;echo &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#dbbb3d;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;LABEL=Nix &#x2F;nix apfs rw&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#dbbb3d;&quot;&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;| &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; tee&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; -a&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;etc&#x2F;fstab &lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# add an entry to fstab to automount
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;After this you can install Nix the usual way and everything should be fine. Ta-da!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Displaying the computed and in use tsconfig</title>
+        <published>2019-04-03T09:29:00+01:00</published>
+        <updated>2019-04-03T09:29:00+01:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://zbrox.com/posts/tsconfig-show/"/>
+        <id>https://zbrox.com/posts/tsconfig-show/</id>
+        
+        <content type="html" xml:base="https://zbrox.com/posts/tsconfig-show/">&lt;p&gt;Usually, the configuration for the TypeScript compiler is pretty light. In some weird situations when things are not going as expected it is nice to be able to view what is the full &lt;code&gt;tsconfig.json&lt;&#x2F;code&gt; with all the default and computed properties in it. Since &lt;a href=&quot;https:&#x2F;&#x2F;www.typescriptlang.org&#x2F;docs&#x2F;handbook&#x2F;release-notes&#x2F;typescript-3-2.html#the-new---showconfig-flag&quot;&gt;TypeScript 3.2&lt;&#x2F;a&gt; you can
+do that by passing the &lt;code&gt;--showConfig&lt;&#x2F;code&gt; flag.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Getting rust-embedded&#x2F;cross running on macOS</title>
+        <published>2019-03-30T12:25:00+01:00</published>
+        <updated>2019-03-30T12:25:00+01:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://zbrox.com/posts/macos-rust-cross/"/>
+        <id>https://zbrox.com/posts/macos-rust-cross/</id>
+        
+        <summary type="html">&lt;p&gt;One of the great promises and benefits of Rust is that you can easily write code that cross-compiles to various different targets. Not only that but the ecosystem is constantly evolving and trying to make this process
+as painless as possible. &lt;a href=&quot;http:&#x2F;&#x2F;rustup.rs&quot;&gt;Rustup&lt;&#x2F;a&gt; makes &lt;a href=&quot;https:&#x2F;&#x2F;blog.rust-lang.org&#x2F;2016&#x2F;05&#x2F;13&#x2F;rustup.html&quot;&gt;managing different target toolchains&lt;&#x2F;a&gt; a breeze. However, if you don&#x27;t want to pollute your environment with all the different dependencies of those target toolchains you can try &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;rust-embedded&#x2F;cross&quot;&gt;cross&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Opening words</title>
+        <published>2019-03-29T11:37:00+01:00</published>
+        <updated>2019-03-29T11:37:00+01:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://zbrox.com/posts/beginning/"/>
+        <id>https://zbrox.com/posts/beginning/</id>
+        
+        <content type="html" xml:base="https://zbrox.com/posts/beginning/">&lt;p&gt;This place is mostly for me but hopefully, it might help some other people here and there. Here I will store things I stumble on through my programming experience and the occasional mild rants.
+Let&#x27;s see where this goes!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

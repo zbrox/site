@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta itemprop="name" content="This &amp; That" />
+  <meta itemprop="description" content="A bit of everything, mostly about computer stuff and with all the usual caveats" />
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://zbrox.com/apple-touch-icon.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="https://zbrox.com/favicon-32x32.png" />
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="16x16"
+    href="https://zbrox.com/favicon-16x16.png"
+  />
+  <link
+    rel="shortcut icon"
+    href="https://zbrox.com/favicon.ico"
+  />
+  <link rel="stylesheet" href="https://zbrox.com/style.css"/>
+  
+  <title>Creating thin Docker containers for Rust binaries</title>
+  
+
+  
+  
+  <link rel="alternate" type="application/atom+xml" title="RSS" href="https://zbrox.com/atom.xml">
+  
+  
+
+  <body id="page">
+
+	
+<header id="site-header" class="animated slideInUp faster">
+  <div class="hdr-wrapper section-inner">
+    <div class="hdr-left">
+      <div class="site-branding">
+        <a href="https:&#x2F;&#x2F;zbrox.com">This &amp; That</a>
+      </div>
+      <nav class="site-nav hide-in-mobile">
+            
+        
+        <a href="https://zbrox.com/posts">Posts</a>
+        
+        <a href="https://zbrox.com/about">About</a>
+        
+      </nav>
+    </div>
+    <div class="hdr-right hdr-icons">
+      <span class="hdr-social hide-in-mobile">
+        
+
+<a href="https:&#x2F;&#x2F;github.com&#x2F;zbrox" target="_blank" rel="noopener me"
+   title="github">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+  
+</a>
+
+<a href="mailto:me@zbrox.com" target="_blank" rel="noopener me"
+   title="email">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+  
+</a>
+
+
+      </span>
+      <button id="menu-btn" class="hdr-btn" title="Menu">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="feather feather-menu"
+        >
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+<div id="mobile-menu" class="animated fast">
+  <ul>
+    
+    <li><a href="https://zbrox.com/posts">Posts</a></li>
+    
+    <li><a href="https://zbrox.com/about">About</a></li>
+    
+  </ul>
+</div>
+
+	
+	
+
+		
+<main class="site-main section-inner animated fadeIn faster">
+  <article class="thin">
+	<header class="post-header">
+	  <div class="post-meta">
+		
+		<span>Jun 24, 2020</span>
+		<small> - 
+<span class="reading-time" title="Estimated read time">
+  
+  3 min read
+  
+</span>
+</small>
+		
+            
+	  </div>
+	  <h1>Creating thin Docker containers for Rust binaries</h1>
+	</header>
+
+	<div class="content">
+        
+	  <p>Sometimes you need to distribute some tools as Docker containers, for example when you are running some long-running processes in a Kubernetes cluster. Or whatever else, I don't judge. Since nowadays I write all CLI tooling in Rust because it's just pure joy, I decided I need to make myself a small <code>Dockerfile</code> template for building thin images that won't take much disk space and are fast to download and run with only the bare minimum.</p>
+<p>To ensure we're gonna end up with a really small Docker image, we need to make it a <a href="https://docs.docker.com/develop/develop-images/multistage-build/">multi-stage build</a> one. My original plan seemed easy enough. Compile a static binary using the Rust Linux musl toolchain in the first stage. Then move only the binary to a <a href="https://hub.docker.com/_/scratch/">scratch image</a> in the second stage. The scratch image is the most minimal Docker image you can use, with no extra layers, and nothing else in it really.</p>
+<p>There are official <a href="https://hub.docker.com/_/rust">Rust Docker images</a>, so that's what I chose as a build stage base. They include <code>rustup</code>, so I just installed the <code>musl</code> toolchain and <code>musl-tools</code>, and I thought I was ready to go. However, when I tried to build the image, the build step in the first phase panicked with the following error:</p>
+<pre style="background-color:#31333d;color:#ffffffc4;"><code><span>thread &#39;main&#39; panicked at &#39;
+</span><span>
+</span><span>Could not find directory of OpenSSL installation, and this `-sys` crate cannot
+</span><span>proceed without this knowledge. If OpenSSL is installed and this crate had
+</span><span>trouble finding it,  you can set the `OPENSSL_DIR` environment variable for the
+</span><span>compilation process.
+</span><span>
+</span><span>Make sure you also have the development packages of openssl installed.
+</span><span>For example, `libssl-dev` on Ubuntu or `openssl-devel` on Fedora.
+</span></code></pre>
+<p>Of course, I thought, I'm doing some networking, nowadays encrypted connections are a must. So let's just install <code>libssl-dev</code>, as the error suggests. Close, but no cigar. Musl and openssl-sys-extra didn't play well since the SSL package in Ubuntu is linked against <code>glibc</code>. Makes sense. What's next? I didn't really feel like compiling OpenSSL myself.</p>
+<p>With a lit bit of searching, I found the great <a href="https://github.com/clux/muslrust">clux/muslrust</a> Docker image. It's based on <code>Ubuntu Xenial</code> and conveniently has built a <a href="https://github.com/clux/muslrust#c-libraries">lot of things with musl-gcc</a>, like OpenSSL. A big thanks for this effort to <a href="https://github.com/clux">clux, the creator</a>!</p>
+<p>After replacing the <code>rust</code> image with <code>clux/muslrust</code> the crate compilation went fine and I thought that's that. But since I kinda rushed it, I totally forgot the small tiny detail of CA certificates. The Docker image was fine, however, the binary was basically not able to do any HTTPS requests since they would error out with certificate errors. Remember, the scratch image is containing basically just the binary.</p>
+<p>So after a couple of extra steps to install the CA certificates Ubuntu package and then copy over the certificates from the first to the second stage, I was done. And here's the final result.</p>
+<pre data-lang="Dockerfile" style="background-color:#31333d;color:#ffffffc4;" class="language-Dockerfile "><code class="language-Dockerfile" data-lang="Dockerfile"><span style="color:#db7c6d;">FROM</span><span> clux/muslrust </span><span style="color:#db7c6d;">AS </span><span style="font-weight:bold;color:#a3cbe3;">build
+</span><span style="color:#db7c6d;">WORKDIR </span><span>/usr/src
+</span><span>
+</span><span style="color:#707180;"># Update CA Certificates
+</span><span style="color:#db7c6d;">RUN </span><span>apt update -y &amp;&amp; apt install -y ca-certificates
+</span><span style="color:#db7c6d;">RUN </span><span>update-ca-certificates
+</span><span>
+</span><span style="color:#707180;"># Build dependencies and rely on cache if Cargo.toml
+</span><span style="color:#707180;"># or Cargo.lock haven&#39;t changed
+</span><span style="color:#db7c6d;">RUN </span><span>USER=root cargo new &lt;YOUR_CRATE&gt;
+</span><span style="color:#db7c6d;">WORKDIR </span><span>/usr/src/&lt;YOUR_CRATE&gt;
+</span><span style="color:#db7c6d;">COPY</span><span> Cargo.toml Cargo.lock ./
+</span><span style="color:#db7c6d;">RUN </span><span>cargo build --target x86_64-unknown-linux-musl --release
+</span><span>
+</span><span style="color:#707180;"># Copy the source and build the application.
+</span><span style="color:#db7c6d;">COPY</span><span> src ./src
+</span><span style="color:#db7c6d;">RUN </span><span>cargo install --target x86_64-unknown-linux-musl --path .
+</span><span>
+</span><span style="color:#707180;"># Second stage
+</span><span style="color:#db7c6d;">FROM</span><span> scratch
+</span><span>
+</span><span style="color:#707180;"># Copy the CA certificates
+</span><span style="color:#db7c6d;">COPY</span><span> --from=</span><span style="font-weight:bold;color:#a3cbe3;">build</span><span> /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+</span><span style="color:#707180;"># Copy the statically-linked binary to the second stage
+</span><span style="color:#db7c6d;">COPY</span><span> --from=</span><span style="font-weight:bold;color:#a3cbe3;">build</span><span> /root/.cargo/bin/&lt;YOUR_CRATE&gt; .
+</span><span style="color:#db7c6d;">USER </span><span>1000
+</span><span>
+</span><span style="color:#db7c6d;">CMD </span><span>[</span><span style="font-weight:bold;color:#dbbb3d;">&quot;</span><span>./&lt;YOUR_CRATE&gt;</span><span style="font-weight:bold;color:#dbbb3d;">&quot;</span><span>]
+</span></code></pre>
+<p>This basic <code>Dockerfile</code> template is available as a <a href="https://gist.github.com/zbrox/716d75c9c8d27016f2f528335617ceb4">GitHub Gist</a>. I use it in a couple of places, one of which is a public crate called <a href="https://crates.io/crates/rmq_monitor">rmq_monitor</a>. The image size turns out to be a tad more than your binary, in the case of <a href="https://hub.docker.com/layers/zbrox/rmq_monitor/0.2.5/images/sha256-32ef6ed0329066d3ad83949c0581782eec5aeed0ebdbcd80707ce20a7208fceb?context=explore">the rmq_monitor image</a> it's only <strong>7Mb</strong> uncompressed.</p>
+
+	</div>
+	<hr class="post-end">
+	<footer class="post-info">
+    
+	  <p>
+		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg>
+		
+		
+		<span class="tag"><a href="https://zbrox.com/tags/rust/">rust</a></span>
+		
+		<span class="tag"><a href="https://zbrox.com/tags/docker/">docker</a></span>
+		
+		
+    </p>
+    
+    <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>692 Words</p>
+    
+    <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-06-24T18:21:13+02:00</p>
+    
+	</footer>
+  </article>
+    
+  
+  <div class="post-nav thin">
+	
+	
+  </div>
+
+  
+</main>
+
+	  </div>
+	  
+	  
+
+
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+  <p>&copy; 2024 <a href="https:&#x2F;&#x2F;zbrox.com">Rostislav Raykov</a></p>
+  <p>Made with <a href="https://www.getzola.org" target="_blank" rel="noopener">Zola</a> &#183; Theme <a href="https://github.com/VersBinarii/hermit_zola" target="_blank" rel="noopener">Hermit_Zola</a>
+  
+  
+  &#183; <a href="https://zbrox.com/atom.xml" target="_blank" title="RSS"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+  
+  
+  </p>
+</footer>
+
+
+
+
+	</div>
+	
+	<script src="https://zbrox.com/js/main.js"></script>
+
+	<!-- Math rendering -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
+        onload="renderMathInElement(document.body, { delimiters: [ {left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}, {left: '\\[', right: '\\]', display: true}, {left: '\\(', right: '\\)', display: false}]});"></script>
+
+    
+
+	
+	<script src="https://zbrox.com/js/copy.js"></script>
+	
+	<script src="https://zbrox.com/js/main.js"></script>
+
+    
+<!-- Fathom - simple website analytics - https://github.com/usefathom/fathom -->
+<script>
+    (function(f, a, t, h, o, m){
+        a[h]=a[h]||function(){
+            (a[h].q=a[h].q||[]).push(arguments)
+        };
+        o=f.createElement('script'),
+        m=f.getElementsByTagName('script')[0];
+        o.async=1; o.src=t; o.id='fathom-script';
+        m.parentNode.insertBefore(o,m)
+    })(document, window, '//fathom.zbrox.com/tracker.js', 'fathom');
+    fathom('set', 'siteId', 'LYYVX');
+    fathom('trackPageview');
+</script>
+<!-- / Fathom -->
+
+
+	
+  </body>
+</html>
